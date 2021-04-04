@@ -10,8 +10,6 @@ import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.Locale;
-
 @Configuration
 @Slf4j
 public class SharedConfiguration {
