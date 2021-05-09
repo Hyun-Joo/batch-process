@@ -1,4 +1,4 @@
 spring:
   batch:
     job:
-      names: ${job.name:NONE}
+      names: ${job.name:NONE}  # 설정값이 없어도 아무 배치를 실행하지 않음
