@@ -1,9 +1,9 @@
 spring:
   datasource:
     hikari:
-      jdbc-url: jdbc:mysql://127.0.0.1:3306/spring_batch?characterEncoding=UTF-8&serverTimezone=UTC
+      jdbc-url: jdbc:mysql://127.0.0.1:3306/spring_batch?characterEncoding=UTF-8&serverTimezone=UTC&allowPublicKeyRetrieval=true
       driver-class-name: com.mysql.cj.jdbc.Driver
       username: root
       password: 1234
   batch:
-    initialize-schema: never  # always, embedded(기본값, 내장DB일 때만 실행), never
+    initialize-schema: never  # always, embedded(기본값, 내장DB일 때만 실행), never(메타 테이블이 자동으로 생성되지 않게 함)
