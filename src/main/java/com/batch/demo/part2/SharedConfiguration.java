@@ -25,7 +25,7 @@ public class SharedConfiguration {
     @Bean
     public Job shareJob(){
         // Job Execution Context: Job이 관리하는 Step 내 어디서든 데이터 공유 가능
-        // Step Execution Context: 해당 Step에 한해서만 데이터 공유
+        // Step Execution Context: 해당 Step에 한해서만 데이터 공유(Step은 Step끼리 공유되지 않음)
         return jobBuilderFactory.get("shareJob")
                 .incrementer(new RunIdIncrementer())
                 .start(this.shareStep())
@@ -33,7 +33,8 @@ public class SharedConfiguration {
                 .build();
     }
 
-    private Step shareStep() {
+    @Bean
+    public Step shareStep() {
         return stepBuilderFactory.get("shareStep")
                 .tasklet((contribution, chunkContext) -> {
                     StepExecution stepExecution = contribution.getStepExecution();
@@ -56,7 +57,8 @@ public class SharedConfiguration {
                 .build();
     }
 
-    private Step shareStep2() {
+    @Bean
+    public Step shareStep2() {
         return stepBuilderFactory.get("shareStep2")
                 .tasklet((contribution, chunkContext) -> {
                     StepExecution stepExecution = contribution.getStepExecution();
