@@ -9,6 +9,7 @@ import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.JobScope;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.item.ItemProcessor;
@@ -74,18 +75,19 @@ public class ChunkProcessingConfiguration {
     @Bean
     public Step taskBaseStep() {
         return stepBuilderFactory.get("taskBaseStep")
-                .tasklet(this.tasklet())
+                .tasklet(this.tasklet(null))
                 .build();
     }
 
-    private Tasklet tasklet() {
+    @Bean
+    @StepScope
+    public Tasklet tasklet(@Value("#{jobParameters[chunkSize]}") String value) {
         List<String> items = getItems();
         return (contribution, chunkContext) -> {
             // 210513: Tasklet을 Chunk처럼 실행해보기 예제
             StepExecution stepExecution = contribution.getStepExecution();
-            JobParameters jobParameters = stepExecution.getJobParameters();
-
-            String value = jobParameters.getString("chunkSize", "10");
+//            JobParameters jobParameters = stepExecution.getJobParameters();
+//            String value = jobParameters.getString("chunkSize", "10");
             int chunkSize = StringUtils.isNotEmpty(value) ? Integer.parseInt(value) : 10;
             int fromIndex = stepExecution.getReadCount();
             int toIndex = fromIndex + chunkSize;
