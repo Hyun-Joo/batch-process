@@ -7,6 +7,8 @@ import org.springframework.batch.core.configuration.annotation.JobBuilderFactory
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.item.ItemWriter;
+import org.springframework.batch.item.database.JdbcCursorItemReader;
+import org.springframework.batch.item.database.builder.JdbcCursorItemReaderBuilder;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
@@ -15,6 +17,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 
+import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,10 +28,12 @@ public class ItemReaderConfiguration {
 
     private final JobBuilderFactory jobBuilderFactory;
     private final StepBuilderFactory stepBuilderFactory;
+    private final DataSource dataSource;
 
-    public ItemReaderConfiguration(JobBuilderFactory jobBuilderFactory, StepBuilderFactory stepBuilderFactory) {
+    public ItemReaderConfiguration(JobBuilderFactory jobBuilderFactory, StepBuilderFactory stepBuilderFactory, DataSource dataSource) {
         this.jobBuilderFactory = jobBuilderFactory;
         this.stepBuilderFactory = stepBuilderFactory;
+        this.dataSource = dataSource;
     }
 
     @Bean
@@ -37,6 +42,7 @@ public class ItemReaderConfiguration {
                 .incrementer(new RunIdIncrementer())
                 .start(this.customItemReaderStep())
                 .next(this.csvFileStep())
+                .next(this.jdbcStep())
                 .build();
     }
 
@@ -53,9 +59,30 @@ public class ItemReaderConfiguration {
     public Step csvFileStep() throws Exception {
         return stepBuilderFactory.get("csvFileStep")
                 .<Person, Person>chunk(10)
-                .reader(this.csvFileItemReader())
+                .reader(csvFileItemReader())
                 .writer(itemWriter())
                 .build();
+    }
+
+    @Bean
+    public Step jdbcStep() throws Exception {
+        return stepBuilderFactory.get("jdbcStep")
+                .<Person, Person>chunk(10)
+                .reader(jdbcCursorItemReader())
+                .writer(itemWriter())
+                .build();
+    }
+
+    private JdbcCursorItemReader<Person> jdbcCursorItemReader() throws Exception {
+        JdbcCursorItemReader<Person> itemReader =  new JdbcCursorItemReaderBuilder<Person>()
+                .name("jdbcCursorItemReader")
+                .dataSource(dataSource)
+                .sql("select id, name, age, address from person")
+                .rowMapper((rs, rowNum) -> new Person(  // 컬럼 인덱스는 1부터 시작
+                        rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4)))
+                .build();
+        itemReader.afterPropertiesSet();
+        return itemReader;
     }
     
     // FlatItemReader: 파일에 저장된 데이터를 읽어 객체에 매핑
