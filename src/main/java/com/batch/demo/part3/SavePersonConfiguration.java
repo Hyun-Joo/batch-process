@@ -45,6 +45,8 @@ public class SavePersonConfiguration {
         return this.jobBuilderFactory.get("savePersonJob")
                 .incrementer(new RunIdIncrementer())
                 .start(this.savePersonStep(null))
+                .listener(new SavePersonListener.SavePersonJobExecutionListener()) // 리스너를 리스트에 담아 실행
+                .listener(new SavePersonListener.SavePersonAnnotationJobExecutionListener())
                 .build();
     }
 
@@ -56,6 +58,7 @@ public class SavePersonConfiguration {
                 .reader(savePersonItemReader())
                 .processor(new DuplicateValidationProcessor<>(Person::getName, Boolean.parseBoolean(allowDuplicate)))  // 항상 이름 중복체크를 거침
                 .writer(itemWriter())
+                .listener(new SavePersonListener.SavePersonStepExecutionListener())
                 .build();
     }
 
