@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-@SpringBatchTest    // 해당 어노테이션이 있어야 JobScope가 동작함
+@SpringBatchTest    // 해당 어노테이션이 있어야 JobScope 어노테이션이 동작함
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { SavePersonConfiguration.class, TestConfiguration.class})
 public class SavePersonConfigurationTest {
