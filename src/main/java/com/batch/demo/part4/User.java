@@ -1,11 +1,13 @@
 package com.batch.demo.part4;
 
+import com.batch.demo.part5.Orders;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Objects;
 
 @Getter
@@ -21,15 +23,18 @@ public class User {
     
     @Enumerated(EnumType.STRING)
     private Level level = Level.NORMAL;
-    
-    private int totalAmount;
+
+    // User와 1 : N 관계 설정
+    @OneToMany(cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "user_id")
+    private List<Orders> orders;
     
     private LocalDate updatedDate;
     
     @Builder   // 생성자를 기준으로 builder 객체 제공
-    public User(String username, int totalAmount) {
+    public User(String username, List<Orders> orders) {
         this.username = username;
-        this.totalAmount = totalAmount;
+        this.orders = orders;
     }
 
     public Level levelUp(){
@@ -39,6 +44,12 @@ public class User {
         this.updatedDate = LocalDate.now();
 
         return nextLevel;
+    }
+
+    private int getTotalAmount() {
+        return this.orders.stream()
+                .mapToInt(Orders::getAmount)
+                .sum();
     }
 
     public boolean availableLevelUp() {
